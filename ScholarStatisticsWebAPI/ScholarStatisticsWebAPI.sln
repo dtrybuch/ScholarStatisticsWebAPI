@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29926.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScholarStatisticsWebAPI", "ScholarStatisticsWebAPI.csproj", "{568C1440-7936-466C-8256-72C6428AD619}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScholarStatistics.DAL", "..\ScholarStatistics.DAL\ScholarStatistics.DAL.csproj", "{47637BCC-B4D4-46B9-967E-17E5986332D1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{568C1440-7936-466C-8256-72C6428AD619}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{568C1440-7936-466C-8256-72C6428AD619}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{568C1440-7936-466C-8256-72C6428AD619}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{568C1440-7936-466C-8256-72C6428AD619}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47637BCC-B4D4-46B9-967E-17E5986332D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47637BCC-B4D4-46B9-967E-17E5986332D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47637BCC-B4D4-46B9-967E-17E5986332D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47637BCC-B4D4-46B9-967E-17E5986332D1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {513CDDB0-A700-4274-B912-61150DBC1C71}
+	EndGlobalSection
+EndGlobal
