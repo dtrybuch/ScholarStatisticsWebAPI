@@ -9,7 +9,9 @@ namespace ScholarStatistics.DAL.Interfaces
         IEnumerable<Publication> GetPublications();
         Publication GetPublicationById(int id);
         bool AddPublication(Publication publication);
+        bool AddPublications(List<Publication> publications);
         bool UpdatePublication(Publication publication);
+        bool UpdatePublicationRange(IEnumerable<Publication> publications);
         bool RemovePublication(int id);
         IEnumerable<Publication> QueryPublications(Func<Publication, bool> predicate);
     }

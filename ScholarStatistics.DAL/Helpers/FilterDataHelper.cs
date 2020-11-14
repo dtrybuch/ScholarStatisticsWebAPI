@@ -22,74 +22,75 @@ namespace ScholarStatistics.DAL.Helpers
 {
     public class FilterDataHelper : IFilterDataHelper
     {
-        private readonly IAuthorsRepository _authorsRepository;
         private readonly ICategoriesRepository _categoriesRepository;
         private readonly IAffiliationsRepository _affiliationsRepository;
         private readonly IPublicationsRepository _publicationsRepository;
         private readonly ILogger<FilterDataHelper> _logger;
-        private readonly string scorpusApiKey = "7dbe54dab14260feabebf2b085778135";
+        private readonly List<string> scopusApiKeys = new List<string>()
+        {
+            //"ebc18d915ccd203672b713a312ee498b",
+            //"83ddf2650464dd50d9509eb5c655043a",
+            //"7dbe54dab14260feabebf2b085778135",
+            //"9a3a38e36bde9d48403be5af2f89d7fa",
+            //"a3203f9083266cacc6dcc57dfa337956",
+            "41ebcdbc13804f194d086b3e721a7fb1",
+            "aa8e9c4f1dda149bf5c9ebe32de1cb9c"
+        };
+        private string scopusApiKey;
         private readonly DateTime startDateTime = new DateTime(1, 1, 1);
-        public FilterDataHelper(IAuthorsRepository authorsRepository, ICategoriesRepository categoriesRepository,
+        public FilterDataHelper(ICategoriesRepository categoriesRepository,
             IAffiliationsRepository affiliationsRepository, IPublicationsRepository publicationsRepository,
             ILogger<FilterDataHelper> logger)
         {
-            _authorsRepository = authorsRepository;
             _categoriesRepository = categoriesRepository;
             _affiliationsRepository = affiliationsRepository;
             _publicationsRepository = publicationsRepository;
             _logger = logger;
-            SetRatioPublications();
+            scopusApiKey = GetAPIKey();
+            //SetDifferenceBetweenPublicationsInDays();
+            //SetRatioPublications();
+            //SetCountryToCategories();
+            //SetAffiliationLatAndLong();
+            //SaveCountOfDays();
         }
 
-        public void SaveArxivData()
+        public void SaveArxivDataByCategories()
         {
-            int step = 2000;
+            int step = 500;
             var categories = _categoriesRepository.GetCategories().ToArray();
-            var index = Array.FindIndex<Category>(categories, category => category.Code == "physics.acc-ph");
+            var index = Array.FindIndex<Category>(categories, category => category.Code == "q-fin.CP");
             var leftCategories = categories.TakeLast(categories.Length - index).ToList();
+            //var leftCategories = categories.TakeLast(categories.Length).ToList();
+            var publications = _publicationsRepository.GetPublications();
             foreach (var mainCategory in leftCategories)
             {
-                for (int i = 0; i < 10000; i += step)
+                for (int i = 0; i < 500; i += step)
                 {
                     try
                     {
                         Debug.WriteLine($"\nDateTime: {DateTime.Now}. \n Main Category: {mainCategory.Code}, i = {i}\n");
                         using (XmlReader reader = XmlReader.Create("https://export.arxiv.org/api/query?search_query=cat:" + mainCategory.Code + $"&max_results={step}&start={i}&sortBy=lastUpdatedDate"))
                         {
+                            Debug.WriteLine($"\nDateTime: {DateTime.Now}. \n Main Category: {mainCategory.Code}, i = {i}, get from website done.\n");
                             var feed = SyndicationFeed.Load(reader);
                             foreach (var item in feed.Items)
                             {
-                                var authorsList = new List<Author>();
-                                foreach (var author in item.Authors)
+                                if (publications.Where(publication => GetCuttedString(publication.Title) == GetCuttedString(item.Title.Text)).Any()) continue;                                                         
+                                var categorieIds = new List<int>();
+                                var publication = new Publication();
+                                foreach (var categoryItem in item.Categories)
                                 {
-                                    var (firstName, lastName) = GetAuthorsNames(author.Name);
-                                    authorsList.Add(new Author()
-                                    {
-                                        FirstName = firstName,
-                                        LastName = lastName
-                                    });
-                                }
-                                var unaccepted = authorsList.Where(author => author.FirstName.EndsWith(".") && author.FirstName.Length < 6);
-                                if (unaccepted.Count() > 0) break;
-                                else
+                                    var categoryFromDB = _categoriesRepository.QueryCategories(category => category.Code == categoryItem.Name).ToArray();
+                                    if (categoryFromDB.Count() > 0) categorieIds.Add(categoryFromDB[0].CategoryId);
+                                }    
+                                publication = new Publication()
                                 {
-                                    var categorieIds = new List<int>();
-                                    foreach (var categoryItem in item.Categories)
-                                    {
-                                        var categoryFromDB = _categoriesRepository.QueryCategories(category => category.Code == categoryItem.Name).ToArray();
-                                        if (categoryFromDB.Count() > 0) categorieIds.Add(categoryFromDB[0].CategoryId);
-                                    }
-                                    var authorIds = _authorsRepository.AddAuthors(authorsList);
-                                    var publication = new Publication()
-                                    {
-                                        AuthorsFK = authorIds,
-                                        Title = item.Title.Text,
-                                        DateOfAddedToArxiv = item.PublishDate.DateTime,
-                                        CategoriesFK = categorieIds
-                                    };
-                                    _publicationsRepository.AddPublication(publication);
-                                }
-                            }
+                                    Title = item.Title.Text,
+                                    DateOfAddedToArxiv = item.PublishDate.DateTime,
+                                    CategoriesFK = categorieIds
+                                };                               
+                                _publicationsRepository.AddPublication(publication);
+                            }   
                         }
                     }
                     catch (Exception e)
@@ -100,33 +101,12 @@ namespace ScholarStatistics.DAL.Helpers
             }
         }
 
-        //First Name first
-        private (string, string) GetAuthorsNames(string name)
+        private static string GetCuttedString(string value)
         {
-            var names = name.Split();
-            var firstName = "";
-            if (names.Count() > 2)
-                firstName = string.Join(" ", names, 0, names.Count() - 1);
-            else if (names.Count() == 2)
-                firstName = names[0];
-            var lastName = names[^1];
-            return (firstName, lastName);
+            return string.Concat(value.Replace("\n", "").Replace("\r", "").ToLower().Where(c => !char.IsWhiteSpace(c)));
         }
 
-        //Last Name first
-        private (string, string) GetLastAuthorsNames(string name)
-        {
-            var names = name.Split();
-            var firstName = "";
-            if (names.Count() > 2)
-                firstName = string.Join(" ", names, 1, names.Count() - 1);
-            else if (names.Count() == 2)
-                firstName = names[^1];
-            var lastName = names[0];
-            return (firstName, lastName);
-        }
-
-        private void AddAffiliationToAuthor(XElement ele, Author author)
+        private void AddAffiliationToPublication(XElement ele, Publication publication)
         {
             string name = "", city = "", country = "";
             foreach (var value in ele.Elements())
@@ -149,106 +129,45 @@ namespace ScholarStatistics.DAL.Helpers
                 var id = _affiliationsRepository.AddAffiliation(affiliation);
                 if (id != 0)
                 {
-                    author.AffiliationFK = id;
-                    _authorsRepository.UpdateAuthor(author);
+                    publication.AffiliationFK = id;
+                    _publicationsRepository.UpdatePublication(publication);
                 }
             }
-        }
-
-        public void SaveAuthorsAffiliationFromScopus()
-        {
-            var authors = _authorsRepository.QueryAuthors(author => author.AffiliationFK == 0);
-            var i = 0;
-            var addedAffiliations = 0;
-            var authorsCount = authors.Count();
-            foreach (var author in authors)
-            {
-                Debug.WriteLine($"Remained clients: {authorsCount - i}");
-                Debug.WriteLine($"Added affiliations: {addedAffiliations}");
-                using (HttpClient client = new HttpClient())
-                {
-                    try
-                    {
-                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
-                        var url = "https://api.elsevier.com/content/search/scopus?query=AUTH" + HttpUtility.UrlEncode("(" + author.FirstName + " " + author.LastName + ")") + $"&apiKey={scorpusApiKey}";
-                        Debug.WriteLine(url);
-                        i++;
-                        using (var response = client.GetAsync(url).Result)
-                        {
-
-                            response.EnsureSuccessStatusCode();
-                            string responseBody = response.Content.ReadAsStringAsync().Result;
-                            TextReader sr = new StringReader(responseBody);
-                            XmlReader reader = XmlReader.Create(sr);
-                            var feed = SyndicationFeed.Load(reader);
-                            var isProperlyAuthor = false;
-                            foreach (var item in feed.Items)
-                            {
-                                if (isProperlyAuthor)
-                                    break;
-                                foreach (var extension in item.ElementExtensions)
-                                {
-                                    XElement ele = extension.GetObject<XElement>();
-                                    if (ele.Name.LocalName == "creator")
-                                    {
-                                        var (firstName, lastName) = GetLastAuthorsNames(ele.Value);
-                                        if (firstName.Length > 0)
-                                        {
-                                            if (author.FirstName.StartsWith(firstName[0]) && string.Compare(author.LastName, lastName, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0)
-                                            {
-                                                isProperlyAuthor = true;
-                                            }
-                                        }
-                                    }
-                                    if (ele.Name.LocalName == "affiliation")
-                                    {
-                                        if (isProperlyAuthor)
-                                        {
-                                            AddAffiliationToAuthor(ele, author);
-                                            addedAffiliations++;
-                                        }
-                                    }
-                                }
-                            } 
-                        }
-                    }
-                    catch(Exception e)
-                    {
-                        _logger.LogError(e.Message);
-                    }
-
-
-                }
-            }
-                    
         }
         public void SavePublicationsFromScopus()
         {
-
-            var publications = _publicationsRepository.QueryPublications(publication => publication.DateOfPublished == startDateTime).ToArray();
+            var rnd = new Random();
+            var publications = _publicationsRepository.QueryPublications(publication => publication.WasCheckedInScopus == false).ToArray();
             int countOfAddedDate = 0;
+            int allPub = publications.Count();
             foreach (var publication in publications)
             {
-
                 using (HttpClient client = new HttpClient())
                 {
                     try
                     {
                         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
-                        var url = "https://api.elsevier.com/content/search/scopus?query=TITLE" + HttpUtility.UrlEncode("(" + publication.Title.Replace("\n", "").Replace("\r", "") + ")") + $"&apiKey={scorpusApiKey}";
+                        var url = "https://api.elsevier.com/content/search/scopus?query=TITLE" + HttpUtility.UrlEncode("(" + publication.Title.Replace("\n", "").Replace("\r", "") + ")") + $"&apiKey={scopusApiKey}";
                         Debug.WriteLine(url);
-                        Debug.WriteLine(countOfAddedDate);
+                        Debug.WriteLine($"countOfAddedDate : {countOfAddedDate}");
                         using (var response = client.GetAsync(url).Result)
                         {
-
+                            Debug.WriteLine($"Left: {allPub--}");
+                            if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                                scopusApiKey = GetAPIKey();
+                            if(response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                            {
+                                publication.WasCheckedInScopus = true;
+                                _publicationsRepository.UpdatePublication(publication);
+                            }
                             response.EnsureSuccessStatusCode();
                             string responseBody = response.Content.ReadAsStringAsync().Result;
                             TextReader sr = new StringReader(responseBody);
                             XmlReader reader = XmlReader.Create(sr);
                             var feed = SyndicationFeed.Load(reader);
-                            foreach (var item in feed.Items)
+                            if(feed.Items.Any())
                             {
-                                Author mainAuthor = null;
+                                var item = feed.Items.ToArray()[0];
                                 foreach (var extension in item.ElementExtensions)
                                 {
                                     XElement ele = extension.GetObject<XElement>();
@@ -258,35 +177,28 @@ namespace ScholarStatistics.DAL.Helpers
                                     //    var val2 = string.Concat(publication.Title.Replace("\n", "").Replace("\r", "").ToLower().Where(c => !Char.IsWhiteSpace(c)));
                                     //}
                                     //if (ele.Name.LocalName == "title" && String.Concat(ele.Value.Replace("\n", "").Replace("\r", "").ToLower().Where(c => !Char.IsWhiteSpace(c))) != string.Concat(publication.Title.Replace("\n", "").Replace("\r", "").ToLower().Where(c => !Char.IsWhiteSpace(c)))) break;
+                                    if (ele.Name.LocalName == "error")
+                                    {
+                                        Debug.WriteLine(ele.Value);
+                                        break;
+                                    }
                                     if (ele.Name.LocalName == "coverDate")
                                     {
                                         countOfAddedDate++;
                                         publication.DateOfPublished = DateTime.Parse(ele.Value);
-                                        _publicationsRepository.UpdatePublication(publication);
                                     }
-                                    if (ele.Name.LocalName == "creator")
+                                    if (ele.Name.LocalName == "citedby-count")
                                     {
-                                        var (firstName, lastName) = GetLastAuthorsNames(ele.Value);
-                                        if (firstName.Length > 0)
-                                        {
-                                            var authorFromDB = _authorsRepository.QueryAuthors(author => author.FirstName.StartsWith(firstName[0]) && author.LastName == lastName);
-                                            if (authorFromDB.Count() == 1)
-                                            {
-                                                mainAuthor = authorFromDB.ToArray()[0];
-                                            }
-                                        }
+                                        publication.CountOfCited = int.Parse(ele.Value);
                                     }
                                     if (ele.Name.LocalName == "affiliation")
                                     {
-                                        if (mainAuthor != null)
-                                        {
-                                            AddAffiliationToAuthor(ele, mainAuthor);
-                                        }
+                                        AddAffiliationToPublication(ele, publication);
                                     }
-
                                 }
                             }
-                       
+                            publication.WasCheckedInScopus = true;
+                            _publicationsRepository.UpdatePublication(publication);
                         }
                     }
                     catch (Exception e)
@@ -298,7 +210,12 @@ namespace ScholarStatistics.DAL.Helpers
             }
 
         }
-        public void SetDifferenceBetweenPublications()
+        private string GetAPIKey()
+        {
+            var rnd = new Random();
+            return scopusApiKeys[rnd.Next(0, scopusApiKeys.Count - 1)];
+        }
+        public void SetDifferenceBetweenPublicationsInDays()
         {
             foreach (var category in _categoriesRepository.GetCategories())
             {
@@ -308,12 +225,11 @@ namespace ScholarStatistics.DAL.Helpers
                 var average = 0D;
                 foreach (var publication in publicatedPublications)
                 {
-                    var dateOffset1 = publication.DateOfPublished.Ticks;
-                    var dateOffset2 = publication.DateOfAddedToArxiv.Ticks;
-                    average += (dateOffset1 - dateOffset2)/ (double)publicatedPublications.Count();
+                    var dateOffset1 = publication.DateOfPublished;
+                    var dateOffset2 = publication.DateOfAddedToArxiv;
+                    average += (dateOffset1 - dateOffset2).TotalDays/ (double)publicatedPublications.Count();
                 }
-                var time = new DateTime((long)average);
-                category.DifferenceBetweenPublications = time;
+                category.DifferenceBetweenPublicationsInDays = average;
                 _categoriesRepository.UpdateCategory(category);
             }
         }
@@ -325,6 +241,121 @@ namespace ScholarStatistics.DAL.Helpers
                 var notAddedPublications = allPublications.Where(publication => publication.DateOfPublished == startDateTime);
                 category.RatioPublications = (float)notAddedPublications.Count() / (float)allPublications.Count();
                 _categoriesRepository.UpdateCategory(category);
+            }
+        }
+        public void SetCountryToCategories()
+        {
+            foreach (var category in _categoriesRepository.GetCategories())
+            {
+                var allPublications = _publicationsRepository.QueryPublications(publication => publication.CategoriesFK.Contains(category.CategoryId) && publication.AffiliationFK != 0).ToList();
+                var affilliations = new List<Affiliation>();
+                foreach (var publication in allPublications)
+                {
+                    affilliations.AddRange(_affiliationsRepository.QueryAffiliations(affilliation => affilliation.AffiliationId == publication.AffiliationFK));
+                }
+                var country = affilliations.GroupBy(i => i.Country).OrderByDescending(grp => grp.Count()).Select(grp => grp.Key).First();
+                category.MainCountry = country;
+                _categoriesRepository.UpdateCategory(category);
+            }
+        }
+        public void SetAffiliationLatAndLong()
+        {
+            var affiliationsQuery = _affiliationsRepository.QueryAffiliations(affiliation => affiliation.Lattitude == 0 && affiliation.Longitude == 0).OrderByDescending(affiliation => affiliation.AffiliationId);
+            //var affiliationsQuery = _affiliationsRepository.GetAffiliations();
+            var left = affiliationsQuery.Count();
+            foreach (var affiliation in affiliationsQuery)
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        //var url = $"https://api.opencagedata.com/geocode/v1/json?q={HttpUtility.UrlEncode(affiliation.City)}%2C%{HttpUtility.UrlEncode(affiliation.Country)}&language=en&key=5cc3df6bad704909ad1e80dcc014234b";
+                        var url = $"https://api.opencagedata.com/geocode/v1/json?q={HttpUtility.UrlEncode(affiliation.Name)}&language=en&key=5cc3df6bad704909ad1e80dcc014234b";
+                        Debug.WriteLine($"Left: {left--}");
+                        Debug.WriteLine(url);
+                        using (var response = client.GetAsync(url).Result)
+                        {
+                            response.EnsureSuccessStatusCode();
+                            string responseBody = response.Content.ReadAsStringAsync().Result;
+                            var jsonObject = JObject.Parse(responseBody);
+                            var result = ((JArray)jsonObject.GetValue("results"))[0];
+                            var geometry = result["geometry"];
+                            affiliation.Lattitude = (double)geometry["lat"];
+                            affiliation.Longitude = (double)geometry["lng"];
+                            _affiliationsRepository.UpdateAffiliation(affiliation);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+                }
+            }
+        }
+
+        public void SaveCountOfDays()
+        {
+            foreach (var category in _categoriesRepository.GetCategories())
+            {
+                ClearCategory(category);
+                var publicatedPublications = _publicationsRepository.QueryPublications(publication => publication.DateOfPublished != startDateTime
+                                            && publication.DateOfPublished > publication.DateOfAddedToArxiv
+                                            && publication.CategoriesFK.Contains(category.CategoryId)).ToList();
+                foreach (var publication in publicatedPublications)
+                {
+                    SaveToProperlyDay(category, publication.DateOfPublished.ToString("dddd", new CultureInfo("en-US")));
+                }
+                SavePercentageOfDays(category, publicatedPublications.Count);
+                _categoriesRepository.UpdateCategory(category);
+            }
+        }
+        private void SavePercentageOfDays(Category category, int size)
+        {
+            category.PercentageOfMondays = (float) category.CountOfMondays / (float) size * 100;
+            category.PercentageOfTuesdays = (float) category.CountOfTuesdays / (float) size * 100;
+            category.PercentageOfWednesdays = (float) category.CountOfWednesdays / (float) size * 100;
+            category.PercentageOfThursdays = (float) category.CountOfThursdays / (float) size * 100;
+            category.PercentageOfFridays = (float) category.CountOfFridays / (float) size * 100;
+            category.PercentageOfSaturdays = (float) category.CountOfSaturdays / (float) size * 100;
+            category.PercentageOfSundays = (float) category.CountOfSundays / (float) size * 100;
+        }
+        private void ClearCategory(Category category)
+        {
+            category.CountOfMondays = 0;
+            category.CountOfTuesdays = 0;
+            category.CountOfWednesdays = 0;
+            category.CountOfThursdays = 0;
+            category.CountOfFridays = 0;
+            category.CountOfSaturdays = 0;
+            category.CountOfSundays = 0;
+        }
+        private void SaveToProperlyDay(Category category, string day)
+        {
+            switch (day)
+            {
+                case "Monday":
+                    category.CountOfMondays++;
+                    break;
+                case "Tuesday":
+                    category.CountOfTuesdays++;
+                    break;
+                case "Wednesday":
+                    category.CountOfWednesdays++;
+                    break;
+                case "Thursday":
+                    category.CountOfThursdays++;
+                    break;
+                case "Friday":
+                    category.CountOfFridays++;
+                    break;
+                case "Saturday":
+                    category.CountOfSaturdays++;
+                    break;
+                case "Sunday":
+                    category.CountOfSundays++;
+                    break;
+                default:
+                    break;
             }
         }
     }

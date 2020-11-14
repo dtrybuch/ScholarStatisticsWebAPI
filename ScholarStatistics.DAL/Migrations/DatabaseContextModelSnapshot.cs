@@ -33,33 +33,18 @@ namespace ScholarStatistics.DAL.Migrations
                     b.Property<string>("Country")
                         .HasColumnType("text");
 
+                    b.Property<double>("Lattitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.HasKey("AffiliationId");
 
                     b.ToTable("Affiliations");
-                });
-
-            modelBuilder.Entity("ScholarStatistics.DAL.Models.Author", b =>
-                {
-                    b.Property<int>("AuthorId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<int>("AffiliationFK")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("text");
-
-                    b.HasKey("AuthorId");
-
-                    b.ToTable("Authors");
                 });
 
             modelBuilder.Entity("ScholarStatistics.DAL.Models.Category", b =>
@@ -72,11 +57,56 @@ namespace ScholarStatistics.DAL.Migrations
                     b.Property<string>("Code")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("DifferenceBetweenPublications")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<int>("CountOfFridays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfMondays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfSaturdays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfSundays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfThursdays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfTuesdays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfWednesdays")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("DifferenceBetweenPublicationsInDays")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("MainCountry")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
+
+                    b.Property<double>("PercentageOfFridays")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PercentageOfMondays")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PercentageOfSaturdays")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PercentageOfSundays")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PercentageOfThursdays")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PercentageOfTuesdays")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PercentageOfWednesdays")
+                        .HasColumnType("double precision");
 
                     b.Property<float>("RatioPublications")
                         .HasColumnType("real");
@@ -93,11 +123,14 @@ namespace ScholarStatistics.DAL.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<List<int>>("AuthorsFK")
-                        .HasColumnType("integer[]");
+                    b.Property<int>("AffiliationFK")
+                        .HasColumnType("integer");
 
                     b.Property<List<int>>("CategoriesFK")
                         .HasColumnType("integer[]");
+
+                    b.Property<int>("CountOfCited")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("DateOfAddedToArxiv")
                         .HasColumnType("timestamp without time zone");
@@ -107,6 +140,9 @@ namespace ScholarStatistics.DAL.Migrations
 
                     b.Property<string>("Title")
                         .HasColumnType("text");
+
+                    b.Property<bool>("WasCheckedInScopus")
+                        .HasColumnType("boolean");
 
                     b.HasKey("PublicationID");
 

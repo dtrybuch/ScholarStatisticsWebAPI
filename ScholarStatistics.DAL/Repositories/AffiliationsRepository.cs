@@ -21,7 +21,7 @@ namespace ScholarStatistics.DAL.Repositories
             try
             {
                 var exist = QueryAffiliations(affiliationQuery => affiliationQuery.Name == affiliation.Name).ToList();
-                if (exist.Count() > 0) return exist[0].AffiliationId;
+                if (exist.Any()) return exist[0].AffiliationId;
                 var tracking = _databaseContext.Affiliations.Add(affiliation);
                 _databaseContext.SaveChanges();
                 return tracking.Entity.AffiliationId;
@@ -100,6 +100,21 @@ namespace ScholarStatistics.DAL.Repositories
                 _databaseContext.SaveChanges();
                 var isModified = tracking.State == EntityState.Modified;
                 return isModified;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                return false;
+            }
+        }
+
+        public bool UpdateAffiliations(IEnumerable<Affiliation> affiliations)
+        {
+            try
+            {
+                _databaseContext.Affiliations.UpdateRange(affiliations);
+                _databaseContext.SaveChanges();
+                return true;
             }
             catch (Exception e)
             {

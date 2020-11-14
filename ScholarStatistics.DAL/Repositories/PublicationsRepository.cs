@@ -33,6 +33,21 @@ namespace ScholarStatistics.DAL.Repositories
                 return false;
             }
         }
+        //we need to be sure that publications are unique
+        public bool AddPublications(List<Publication> publications)
+        {
+            try
+            {
+                _databaseContext.Publications.AddRange(publications);
+                _databaseContext.SaveChanges();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                return false;
+            }
+        }
 
         public Publication GetPublicationById(int id)
         {
@@ -101,6 +116,20 @@ namespace ScholarStatistics.DAL.Repositories
                 _databaseContext.SaveChanges();
                 var isModified = tracking.State == EntityState.Modified;
                 return isModified;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                return false;
+            }
+        }
+        public bool UpdatePublicationRange(IEnumerable<Publication> publications)
+        {
+            try
+            {
+                _databaseContext.Publications.UpdateRange(publications);
+                _databaseContext.SaveChanges();
+                return true;
             }
             catch (Exception e)
             {

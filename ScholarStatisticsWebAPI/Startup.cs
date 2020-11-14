@@ -33,7 +33,6 @@ namespace ScholarStatisticsWebAPI
             services.AddDbContext<DatabaseContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddScoped<IAuthorsRepository, AuthorsRepository>();
             services.AddScoped<ICategoriesRepository, CategoriesRepository>();
             services.AddScoped<IPublicationsRepository, PublicationsRepository>();
             services.AddScoped<IAffiliationsRepository, AffiliationsRepository>();

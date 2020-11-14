@@ -6,7 +6,7 @@ namespace ScholarStatistics.DAL.Helpers
 {
     public interface IFilterDataHelper
     {
-        void SaveArxivData();
+        void SaveArxivDataByCategories();
         void SavePublicationsFromScopus();
     }
 }
