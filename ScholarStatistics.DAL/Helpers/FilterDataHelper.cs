@@ -52,6 +52,8 @@ namespace ScholarStatistics.DAL.Helpers
             //SetCountryToCategories();
             //SetAffiliationLatAndLong();
             //SaveCountOfDays();
+            //AddCountOfPublicationsToCategory();
+            //AddCountOfTopTenCategoriesToAffiliation();
         }
 
         public void SaveArxivDataByCategories()
@@ -260,7 +262,7 @@ namespace ScholarStatistics.DAL.Helpers
         }
         public void SetAffiliationLatAndLong()
         {
-            var affiliationsQuery = _affiliationsRepository.QueryAffiliations(affiliation => affiliation.Lattitude == 0 && affiliation.Longitude == 0).OrderByDescending(affiliation => affiliation.AffiliationId);
+            var affiliationsQuery = _affiliationsRepository.QueryAffiliations(affiliation => affiliation.Lattitude == 0 && affiliation.Longitude == 0);
             //var affiliationsQuery = _affiliationsRepository.GetAffiliations();
             var left = affiliationsQuery.Count();
             foreach (var affiliation in affiliationsQuery)
@@ -357,6 +359,33 @@ namespace ScholarStatistics.DAL.Helpers
                 default:
                     break;
             }
+        }
+        private void AddCountOfPublicationsToCategory()
+        {
+            foreach (var category in _categoriesRepository.GetCategories())
+            {
+                var publications = _publicationsRepository.QueryPublications(publication => 
+                                                    publication.CategoriesFK.Contains(category.CategoryId)).ToList();
+                category.CountOfPublications = publications.Count();
+                _categoriesRepository.UpdateCategory(category);
+            }
+        }
+
+        private void AddCountOfTopTenCategoriesToAffiliation()
+        {
+            var categoryTopList = _categoriesRepository.GetCategories()
+                .OrderByDescending(category => category.CountOfPublications).Take(10);
+            var affiliations = _affiliationsRepository.GetAffiliations();
+            foreach (var affiliation in affiliations)
+            {
+                affiliation.CountOfTopTenCategories = 0;
+                foreach (var publication in _publicationsRepository.QueryPublications(publication => publication.AffiliationFK == affiliation.AffiliationId))
+                {
+                    if (publication.CategoriesFK.Any(id => categoryTopList.Any(category => category.CategoryId == id)))
+                        affiliation.CountOfTopTenCategories++;
+                }
+            }
+            _affiliationsRepository.UpdateAffiliations(affiliations);
         }
     }
 }

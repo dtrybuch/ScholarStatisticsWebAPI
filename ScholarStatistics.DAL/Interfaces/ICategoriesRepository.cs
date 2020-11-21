@@ -12,6 +12,7 @@ namespace ScholarStatistics.DAL.Interfaces
         Category GetCategoryById(int id);
         bool AddCategory(Category category);
         bool UpdateCategory(Category category);
+        bool UpdateCategories(List<Category> categories);
         bool RemoveCategory(int id);
         IEnumerable<Category> QueryCategories(Func<Category, bool> predicate);
         void FillCategoriesRepository();

@@ -26,5 +26,6 @@ namespace ScholarStatistics.DAL.Models
         public double PercentageOfFridays { get; set; }
         public double PercentageOfSaturdays { get; set; }
         public double PercentageOfSundays { get; set; }
+        public int CountOfPublications { get; set; }
     }
 }

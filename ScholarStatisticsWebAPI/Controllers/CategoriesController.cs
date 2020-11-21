@@ -38,5 +38,10 @@ namespace ScholarStatisticsWebAPI.Controllers
         {
             return _categoriesRepository.GetCategoryById(id);
         }
+        // GET: api/Categories/GetTop
+        public List<Category> GetTop()
+        {
+            return _categoriesRepository.GetCategories().ToList();
+        }
     }
 }

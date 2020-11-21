@@ -121,5 +121,20 @@ namespace ScholarStatistics.DAL
                     });
             });
         }
+
+        public bool UpdateCategories(List<Category> categories)
+        {
+            try
+            {
+                _databaseContext.Categories.UpdateRange(categories);
+                _databaseContext.SaveChanges();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                return false;
+            }
+        }
     }
 }

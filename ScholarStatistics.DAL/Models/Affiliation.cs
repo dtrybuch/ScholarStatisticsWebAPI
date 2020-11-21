@@ -12,5 +12,6 @@ namespace ScholarStatistics.DAL.Models
         public string Country { get; set; }
         public double Lattitude { get; set; }
         public double Longitude { get; set; }
+        public int CountOfTopTenCategories { get; set; }
     }
 }

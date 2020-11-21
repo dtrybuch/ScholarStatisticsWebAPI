@@ -30,6 +30,9 @@ namespace ScholarStatistics.DAL.Migrations
                     b.Property<string>("City")
                         .HasColumnType("text");
 
+                    b.Property<int>("CountOfTopTenCategories")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Country")
                         .HasColumnType("text");
 
@@ -61,6 +64,9 @@ namespace ScholarStatistics.DAL.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("CountOfMondays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfPublications")
                         .HasColumnType("integer");
 
                     b.Property<int>("CountOfSaturdays")
