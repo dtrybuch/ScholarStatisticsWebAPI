@@ -54,7 +54,7 @@ namespace ScholarStatistics.DAL.Helpers
             //SaveCountOfDays();
             //AddCountOfPublicationsToCategory();
             //AddCountOfTopTenCategoriesToAffiliation();
-            AddCategoriesToAffiliation();
+            //AddCategoriesToAffiliation();
         }
 
         public void SaveArxivDataByCategories()
