@@ -12,6 +12,7 @@ namespace ScholarStatistics.DAL.Interfaces
         bool UpdateAffiliation(Affiliation affiliation);
         bool UpdateAffiliations(IEnumerable<Affiliation> affiliations);
         bool RemoveAffiliation(int id);
+        bool RemoveAffiliations(List<Affiliation> affiliations);
         IEnumerable<Affiliation> QueryAffiliations(Func<Affiliation, bool> predicate);
     }
 }

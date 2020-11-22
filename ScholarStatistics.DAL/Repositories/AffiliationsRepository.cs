@@ -92,6 +92,21 @@ namespace ScholarStatistics.DAL.Repositories
             }
         }
 
+        public bool RemoveAffiliations(List<Affiliation> affiliations)
+        {
+            try
+            {
+                _databaseContext.Affiliations.RemoveRange(affiliations);
+                _databaseContext.SaveChanges();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                return false;
+            }
+        }
+
         public bool UpdateAffiliation(Affiliation affiliation)
         {
             try
