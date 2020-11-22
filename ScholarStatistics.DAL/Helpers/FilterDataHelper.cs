@@ -54,6 +54,7 @@ namespace ScholarStatistics.DAL.Helpers
             //SaveCountOfDays();
             //AddCountOfPublicationsToCategory();
             //AddCountOfTopTenCategoriesToAffiliation();
+            AddCategoriesToAffiliation();
         }
 
         public void SaveArxivDataByCategories()
@@ -384,6 +385,21 @@ namespace ScholarStatistics.DAL.Helpers
                     if (publication.CategoriesFK.Any(id => categoryTopList.Any(category => category.CategoryId == id)))
                         affiliation.CountOfTopTenCategories++;
                 }
+            }
+            _affiliationsRepository.UpdateAffiliations(affiliations);
+        }
+        private void AddCategoriesToAffiliation()
+        {
+            var affiliations = _affiliationsRepository.GetAffiliations();
+            foreach (var affiliation in affiliations)
+            {
+                var categoriesIds = new List<int>();
+                var publications = _publicationsRepository.QueryPublications(publication => publication.AffiliationFK == affiliation.AffiliationId);
+                foreach (var publication in publications)
+                {
+                    categoriesIds.AddRange(publication.CategoriesFK);
+                }
+                affiliation.CategoriesUsingInThisAffiliationFK = categoriesIds.Distinct().ToList();
             }
             _affiliationsRepository.UpdateAffiliations(affiliations);
         }

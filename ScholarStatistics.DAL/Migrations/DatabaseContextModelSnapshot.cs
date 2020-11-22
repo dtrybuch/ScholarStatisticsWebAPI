@@ -27,6 +27,9 @@ namespace ScholarStatistics.DAL.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+                    b.Property<List<int>>("CategoriesUsingInThisAffiliationFK")
+                        .HasColumnType("integer[]");
+
                     b.Property<string>("City")
                         .HasColumnType("text");
 
