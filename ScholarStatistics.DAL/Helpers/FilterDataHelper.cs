@@ -25,6 +25,7 @@ namespace ScholarStatistics.DAL.Helpers
         private readonly ICategoriesRepository _categoriesRepository;
         private readonly IAffiliationsRepository _affiliationsRepository;
         private readonly IPublicationsRepository _publicationsRepository;
+        private readonly IAffiliationCategoryRepository _affiliationCategoryRepository;
         private readonly ILogger<FilterDataHelper> _logger;
         private readonly List<string> scopusApiKeys = new List<string>()
         {
@@ -40,11 +41,12 @@ namespace ScholarStatistics.DAL.Helpers
         private readonly DateTime startDateTime = new DateTime(1, 1, 1);
         public FilterDataHelper(ICategoriesRepository categoriesRepository,
             IAffiliationsRepository affiliationsRepository, IPublicationsRepository publicationsRepository,
-            ILogger<FilterDataHelper> logger)
+            ILogger<FilterDataHelper> logger, IAffiliationCategoryRepository affiliationCategoryRepository)
         {
             _categoriesRepository = categoriesRepository;
             _affiliationsRepository = affiliationsRepository;
             _publicationsRepository = publicationsRepository;
+            _affiliationCategoryRepository = affiliationCategoryRepository;
             _logger = logger;
             scopusApiKey = GetAPIKey();
             //SetDifferenceBetweenPublicationsInDays();
@@ -55,6 +57,7 @@ namespace ScholarStatistics.DAL.Helpers
             //AddCountOfPublicationsToCategory();
             //AddCountOfTopTenCategoriesToAffiliation();
             //AddCategoriesToAffiliation();
+            //AddValueToAffiliationCategory();
         }
 
         public void SaveArxivDataByCategories()
@@ -403,5 +406,38 @@ namespace ScholarStatistics.DAL.Helpers
             }
             _affiliationsRepository.UpdateAffiliations(affiliations);
         }
+        private void AddValueToAffiliationCategory()
+        {
+            var allPublications = _publicationsRepository.GetPublications();
+            var affiliationCategories = _affiliationCategoryRepository.GetAffiliationCategories();
+            var categories = _categoriesRepository.GetCategories();
+            //var chosenCategories = categories.Where(cat => affiliationCategories.Any(affcat => affcat.CategoriesFK == cat.CategoryId));
+            foreach (var category in categories)
+            {
+                Debug.WriteLine(category.Name);
+                var pairs = new Dictionary<int, int>();
+                var queriedPublications = allPublications.Where(pub => pub.CategoriesFK.Contains(category.CategoryId) && pub.AffiliationFK != 0);
+                foreach (var publication in queriedPublications)
+                {
+                    if (pairs.Keys.Contains(publication.AffiliationFK))
+                        pairs[publication.AffiliationFK]++;
+                    else
+                        pairs.Add(publication.AffiliationFK, 1);
+                }
+                foreach (var pair in pairs)
+                {
+                    var affiliationCategory = new AffiliationCategory()
+                    {
+                        AffiliationFK = pair.Key,
+                        CategoriesFK = category.CategoryId,
+                        CountOfCategoryPublications = pair.Value
+                    };
+                    _affiliationCategoryRepository.AddAffiliationCategory(affiliationCategory);
+
+                }
+
+            }
+        }
+            
     }
 }

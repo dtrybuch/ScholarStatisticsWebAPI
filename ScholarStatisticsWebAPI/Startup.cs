@@ -36,6 +36,7 @@ namespace ScholarStatisticsWebAPI
             services.AddScoped<ICategoriesRepository, CategoriesRepository>();
             services.AddScoped<IPublicationsRepository, PublicationsRepository>();
             services.AddScoped<IAffiliationsRepository, AffiliationsRepository>();
+            services.AddScoped<IAffiliationCategoryRepository, AffiliationCategoryRepository>();
             services.AddScoped<IFilterDataHelper, FilterDataHelper>();
 
             services.AddControllers();
@@ -64,6 +65,9 @@ namespace ScholarStatisticsWebAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

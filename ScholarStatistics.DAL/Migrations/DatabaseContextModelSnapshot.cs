@@ -53,6 +53,27 @@ namespace ScholarStatistics.DAL.Migrations
                     b.ToTable("Affiliations");
                 });
 
+            modelBuilder.Entity("ScholarStatistics.DAL.Models.AffiliationCategory", b =>
+                {
+                    b.Property<int>("AffiliationCategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("AffiliationFK")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CategoriesFK")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfCategoryPublications")
+                        .HasColumnType("integer");
+
+                    b.HasKey("AffiliationCategoryId");
+
+                    b.ToTable("AffiliationCategories");
+                });
+
             modelBuilder.Entity("ScholarStatistics.DAL.Models.Category", b =>
                 {
                     b.Property<int>("CategoryId")

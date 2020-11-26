@@ -9,6 +9,7 @@ namespace ScholarStatistics.DAL
         public DbSet<Publication> Publications { get; set; }
         public DbSet<Affiliation> Affiliations { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<AffiliationCategory> AffiliationCategories { get; set; }
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
         {
         }
