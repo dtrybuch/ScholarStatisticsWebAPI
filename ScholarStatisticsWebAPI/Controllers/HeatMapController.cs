@@ -31,7 +31,7 @@ namespace ScholarStatisticsWebAPI.Controllers
         [HttpGet("{categoryId}")]
         public IActionResult CategoryHeatmap(int categoryId)
         {
-            var affiliationsCategory = _affiliationCategoryRepository.QueryAffiliationCategories(affcat => affcat.CategoriesFK == categoryId);
+            var affiliationsCategory = _affiliationCategoryRepository.QueryAffiliationCategories(affcat => affcat.CategoryFK == categoryId);
             var model = new List<Affiliation>();
             foreach (var affcat in affiliationsCategory)
             {

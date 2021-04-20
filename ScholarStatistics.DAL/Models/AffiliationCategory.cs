@@ -11,7 +11,7 @@ namespace ScholarStatistics.DAL.Models
         [ForeignKey("Affiliation")]
         public int AffiliationFK { get; set; }
         [ForeignKey("Category")]
-        public int CategoriesFK { get; set; }
+        public int CategoryFK { get; set; }
         public int CountOfCategoryPublications { get; set; }
     }
 }

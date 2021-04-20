@@ -14,6 +14,7 @@ namespace ScholarStatistics.DAL.Models
         public double Lattitude { get; set; }
         public double Longitude { get; set; }
         public int CountOfTopTenCategories { get; set; }
+        public int CountOfPublications { get; set; }
         [ForeignKey("Category")]
         public virtual List<int> CategoriesUsingInThisAffiliationFK { get; set; }
     }

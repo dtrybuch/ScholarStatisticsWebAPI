@@ -21,7 +21,7 @@ namespace ScholarStatistics.DAL.Repositories
             try
             {
                 var exist = QueryAffiliationCategories(affiliationCategoriesQuery => affiliationCategoriesQuery.AffiliationFK == affiliationCategories.AffiliationFK &&
-                affiliationCategoriesQuery.CategoriesFK == affiliationCategories.CategoriesFK).ToList();
+                affiliationCategoriesQuery.CategoryFK == affiliationCategories.CategoryFK).ToList();
                 if (exist.Any())
                 {
                     if(exist[0].CountOfCategoryPublications != affiliationCategories.CountOfCategoryPublications)

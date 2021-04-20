@@ -38,22 +38,22 @@ namespace ScholarStatisticsWebAPI.Controllers
             return _affiliationsRepository.GetAffiliations();
         }
 
-        // GET: /Affiliations/5
-        [HttpGet("{id}")]
-        public List<Category> Get(int id)
-        {
-            var categoriesIds = new List<int>();
-            var publications = _publicationsRepository.QueryPublications(publication => publication.AffiliationFK == id);
-            foreach (var publication in publications)
-            {
-                categoriesIds.AddRange(publication.CategoriesFK);
-            }
-            var categories = new List<Category>();
-            foreach (var categoryId in categoriesIds.Distinct())
-            {
-                categories.Add(_categoriesRepository.GetCategoryById(categoryId));
-            }
-            return categories;
-        }
+        //// GET: /Affiliations/5
+        //[HttpGet("{id}")]
+        //public List<Category> Get(int id)
+        //{
+        //    var categoriesIds = new List<int>();
+        //    var publications = _publicationsRepository.QueryPublications(publication => publication.AffiliationFK == id);
+        //    foreach (var publication in publications)
+        //    {
+        //        categoriesIds.AddRange(publication.CategoriesFK);
+        //    }
+        //    var categories = new List<Category>();
+        //    foreach (var categoryId in categoriesIds.Distinct())
+        //    {
+        //        categories.Add(_categoriesRepository.GetCategoryById(categoryId));
+        //    }
+        //    return categories;
+        //}
     }
 }

@@ -49,6 +49,17 @@ namespace ScholarStatistics.DAL.Repositories
             }
         }
 
+        public int GetCount()
+        {
+            return _databaseContext.Publications.Count();
+        }
+
+        public int GetScopusCount()
+        {
+            DateTime startDateTime = new DateTime(1, 1, 1);
+            return _databaseContext.Publications.Count(pub => pub.DateOfPublished == startDateTime);
+        }
+
         public Publication GetPublicationById(int id)
         {
             try

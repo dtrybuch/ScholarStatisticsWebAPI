@@ -14,5 +14,7 @@ namespace ScholarStatistics.DAL.Interfaces
         bool UpdatePublicationRange(IEnumerable<Publication> publications);
         bool RemovePublication(int id);
         IEnumerable<Publication> QueryPublications(Func<Publication, bool> predicate);
+        int GetCount();
+        int GetScopusCount();
     }
 }

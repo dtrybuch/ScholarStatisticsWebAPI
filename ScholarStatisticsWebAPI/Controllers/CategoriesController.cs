@@ -17,31 +17,22 @@ namespace ScholarStatisticsWebAPI.Controllers
     {
         private readonly ILogger<CategoriesController> _logger;
         private readonly ICategoriesRepository _categoriesRepository;
+        private readonly IPublicationsRepository _publicationsRepository;
         private readonly IFilterDataHelper _filterDataHelper;
         public CategoriesController(ILogger<CategoriesController> logger,
-            ICategoriesRepository categoriesRepository, IFilterDataHelper filterDataHelper)
+            ICategoriesRepository categoriesRepository, IFilterDataHelper filterDataHelper,
+            IPublicationsRepository publicationsRepository)
         {
             _logger = logger;
             _categoriesRepository = categoriesRepository;
             _filterDataHelper = filterDataHelper;
+            _publicationsRepository = publicationsRepository;
         }
         // GET: api/Categories
         [HttpGet]
         public IEnumerable<Category> Get()
         {
             return _categoriesRepository.GetCategories().OrderBy(category => category.Name);
-        }
-
-        // GET: api/Categories/5
-        [HttpGet("{id}")]
-        public Category Get(int id)
-        {
-            return _categoriesRepository.GetCategoryById(id);
-        }
-        // GET: api/Categories/GetTop
-        public List<Category> GetTop()
-        {
-            return _categoriesRepository.GetCategories().ToList();
         }
     }
 }

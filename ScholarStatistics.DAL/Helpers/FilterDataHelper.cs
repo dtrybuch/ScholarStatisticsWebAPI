@@ -49,15 +49,19 @@ namespace ScholarStatistics.DAL.Helpers
             _affiliationCategoryRepository = affiliationCategoryRepository;
             _logger = logger;
             scopusApiKey = GetAPIKey();
+            //SaveArxivDataByCategories();
+            //SavePublicationsFromScopus();
             //SetDifferenceBetweenPublicationsInDays();
             //SetRatioPublications();
             //SetCountryToCategories();
             //SetAffiliationLatAndLong();
             //SaveCountOfDays();
             //AddCountOfPublicationsToCategory();
+            //AddCountOfPublicationsToAffiliation();
             //AddCountOfTopTenCategoriesToAffiliation();
             //AddCategoriesToAffiliation();
             //AddValueToAffiliationCategory();
+            //AddCountOfPublicationFromScopus();
         }
 
         public void SaveArxivDataByCategories()
@@ -375,6 +379,17 @@ namespace ScholarStatistics.DAL.Helpers
             }
         }
 
+        private void AddCountOfPublicationsToAffiliation()
+        {
+            foreach (var affi in _affiliationsRepository.GetAffiliations())
+            {
+                var publications = _publicationsRepository.QueryPublications(publication =>
+                                                    publication.AffiliationFK == affi.AffiliationId).ToList();
+                affi.CountOfPublications = publications.Count();
+                _affiliationsRepository.UpdateAffiliation(affi);
+            }
+        }
+
         private void AddCountOfTopTenCategoriesToAffiliation()
         {
             var categoryTopList = _categoriesRepository.GetCategories()
@@ -429,7 +444,7 @@ namespace ScholarStatistics.DAL.Helpers
                     var affiliationCategory = new AffiliationCategory()
                     {
                         AffiliationFK = pair.Key,
-                        CategoriesFK = category.CategoryId,
+                        CategoryFK = category.CategoryId,
                         CountOfCategoryPublications = pair.Value
                     };
                     _affiliationCategoryRepository.AddAffiliationCategory(affiliationCategory);
@@ -438,6 +453,45 @@ namespace ScholarStatistics.DAL.Helpers
 
             }
         }
-            
+        private void AddCountOfPublicationFromScopus()
+        {
+            foreach (var category in _categoriesRepository.GetCategories())
+            {
+                var scopuspPublications = _publicationsRepository.QueryPublications(publication => 
+                                        publication.DateOfPublished == startDateTime && publication.CategoriesFK.Contains(category.CategoryId)).ToList();
+                category.CountOfPublicationsFromScopus = scopuspPublications.Count();
+                _categoriesRepository.UpdateCategory(category);
+            }
+        }
+
+        void IFilterDataHelper.AddCountOfPublicationsToCategory()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IFilterDataHelper.AddCountOfPublicationsToAffiliation()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IFilterDataHelper.AddCountOfTopTenCategoriesToAffiliation()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IFilterDataHelper.AddCategoriesToAffiliation()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IFilterDataHelper.AddValueToAffiliationCategory()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IFilterDataHelper.AddCountOfPublicationFromScopus()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -33,6 +33,9 @@ namespace ScholarStatistics.DAL.Migrations
                     b.Property<string>("City")
                         .HasColumnType("text");
 
+                    b.Property<int>("CountOfPublications")
+                        .HasColumnType("integer");
+
                     b.Property<int>("CountOfTopTenCategories")
                         .HasColumnType("integer");
 
@@ -63,7 +66,7 @@ namespace ScholarStatistics.DAL.Migrations
                     b.Property<int>("AffiliationFK")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CategoriesFK")
+                    b.Property<int>("CategoryFK")
                         .HasColumnType("integer");
 
                     b.Property<int>("CountOfCategoryPublications")
@@ -91,6 +94,9 @@ namespace ScholarStatistics.DAL.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("CountOfPublications")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CountOfPublicationsFromScopus")
                         .HasColumnType("integer");
 
                     b.Property<int>("CountOfSaturdays")
